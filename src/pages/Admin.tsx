@@ -48,7 +48,7 @@ export default function Admin() {
     const site = settings?.find((x) => x.key === "site")?.value;
     if (site) setSiteCfg(site);
     const maint = settings?.find((x) => x.key === "maintenance")?.value;
-    if (maint) setMaintenance(maint);
+    if (maint) setMaintenance(maint as any);
     setAnnouncements(ann ?? []);
     setArticles(arts ?? []);
     setFaq(f ?? []);
