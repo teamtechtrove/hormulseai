@@ -1,1 +1,10 @@
-project_id = "kjlowenwydjcbcmjdnba"
+project_id = "hormulse-ai"
+
+[functions.chat]
+verify_jwt = false
+
+[functions.generate-plan]
+verify_jwt = false
+
+[functions.vision-analyze]
+verify_jwt = false
