@@ -42,6 +42,7 @@ export default function Admin() {
   const [faq, setFaq] = useState<any[]>([]);
   const [newFaq, setNewFaq] = useState({ question: "", answer: "" });
   const [audit, setAudit] = useState<any[]>([]);
+  const [abuse, setAbuse] = useState<any[]>([]);
   const [broadcast, setBroadcast] = useState({ title: "", body: "", level: "info", target: "all" });
   const [filter, setFilter] = useState("");
   const [busy, setBusy] = useState(false);
