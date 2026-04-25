@@ -83,17 +83,6 @@ export default function About() {
       </Card>
 
       <Card className="shadow-soft">
-        <CardHeader><CardTitle>How it works under the hood</CardTitle></CardHeader>
-        <CardContent className="space-y-2 text-sm">
-          <Item label="Frontend" value="React + Vite + Tailwind + shadcn/ui" />
-          <Item label="Backend" value="Lovable Cloud (Postgres + Auth + Edge Functions + Storage)" />
-          <Item label="AI" value="Lovable AI Gateway by default; admin can plug OpenAI / Anthropic / DeepSeek / Groq keys per provider." />
-          <Item label="Security" value="Row-level security, separate user_roles table, JWT-validated edge functions, signed-in-only uploads scoped to your folder." />
-          <Item label="Privacy" value="Each user sees only their own logs, chats and plans. Admins can read aggregate data through the admin panel." />
-        </CardContent>
-      </Card>
-
-      <Card className="shadow-soft">
         <CardHeader><CardTitle>FAQ</CardTitle></CardHeader>
         <CardContent>
           <Accordion type="single" collapsible>
@@ -111,11 +100,3 @@ export default function About() {
   );
 }
 
-function Item({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 border-b border-border last:border-0 py-2">
-      <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground sm:w-32 shrink-0">{label}</div>
-      <div className="text-sm">{value}</div>
-    </div>
-  );
-}
