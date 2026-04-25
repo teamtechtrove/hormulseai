@@ -100,11 +100,3 @@ export default function About() {
   );
 }
 
-function Item({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 border-b border-border last:border-0 py-2">
-      <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground sm:w-32 shrink-0">{label}</div>
-      <div className="text-sm">{value}</div>
-    </div>
-  );
-}
