@@ -78,6 +78,8 @@ export default function Admin() {
       supabase.from("user_status").select("*"),
       supabase.from("admin_audit_log").select("*").order("created_at", { ascending: false }).limit(100),
     ]);
+    supabase.from("ai_abuse_log").select("*").order("created_at", { ascending: false }).limit(100)
+      .then(({ data }) => setAbuse(data ?? []));
 
     const sMap: Record<string, any> = {};
     (status ?? []).forEach((s: any) => { sMap[s.user_id] = s; });
