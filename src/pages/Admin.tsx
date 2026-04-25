@@ -212,6 +212,7 @@ export default function Admin() {
           <TabsTrigger value="faq">FAQ</TabsTrigger>
           <TabsTrigger value="maintenance">Maintenance</TabsTrigger>
           <TabsTrigger value="audit"><History className="h-4 w-4 mr-1" />Audit</TabsTrigger>
+          <TabsTrigger value="abuse"><ShieldAlert className="h-4 w-4 mr-1" />AI Abuse</TabsTrigger>
         </TabsList>
 
         {/* ============== USERS ============== */}
