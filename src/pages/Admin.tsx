@@ -470,6 +470,31 @@ export default function Admin() {
             </CardContent>
           </Card>
         </TabsContent>
+
+        <TabsContent value="abuse">
+          <Card>
+            <CardHeader><CardTitle>AI abuse / jailbreak attempts (last 100)</CardTitle></CardHeader>
+            <CardContent>
+              <div className="space-y-2 max-h-[640px] overflow-y-auto text-sm">
+                {abuse.length === 0 && <p className="text-muted-foreground">No abuse attempts logged. 🎉</p>}
+                {abuse.map((a) => (
+                  <div key={a.id} className="border border-destructive/40 rounded-lg p-3">
+                    <div className="flex items-center justify-between">
+                      <Badge variant="destructive">{a.reason}</Badge>
+                      <span className="text-xs text-muted-foreground">{new Date(a.created_at).toLocaleString()}</span>
+                    </div>
+                    <div className="mt-1 text-xs text-muted-foreground">
+                      by <span className="font-medium text-foreground">{a.user_email ?? a.user_id}</span>
+                    </div>
+                    {a.excerpt && (
+                      <pre className="mt-2 text-xs bg-muted p-2 rounded overflow-x-auto whitespace-pre-wrap">{a.excerpt}</pre>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
     </div>
   );
