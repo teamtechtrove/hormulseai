@@ -42,6 +42,7 @@ export default function Admin() {
   const [faq, setFaq] = useState<any[]>([]);
   const [newFaq, setNewFaq] = useState({ question: "", answer: "" });
   const [audit, setAudit] = useState<any[]>([]);
+  const [abuse, setAbuse] = useState<any[]>([]);
   const [broadcast, setBroadcast] = useState({ title: "", body: "", level: "info", target: "all" });
   const [filter, setFilter] = useState("");
   const [busy, setBusy] = useState(false);
@@ -77,6 +78,8 @@ export default function Admin() {
       supabase.from("user_status").select("*"),
       supabase.from("admin_audit_log").select("*").order("created_at", { ascending: false }).limit(100),
     ]);
+    supabase.from("ai_abuse_log").select("*").order("created_at", { ascending: false }).limit(100)
+      .then(({ data }) => setAbuse(data ?? []));
 
     const sMap: Record<string, any> = {};
     (status ?? []).forEach((s: any) => { sMap[s.user_id] = s; });
@@ -209,6 +212,7 @@ export default function Admin() {
           <TabsTrigger value="faq">FAQ</TabsTrigger>
           <TabsTrigger value="maintenance">Maintenance</TabsTrigger>
           <TabsTrigger value="audit"><History className="h-4 w-4 mr-1" />Audit</TabsTrigger>
+          <TabsTrigger value="abuse"><ShieldAlert className="h-4 w-4 mr-1" />AI Abuse</TabsTrigger>
         </TabsList>
 
         {/* ============== USERS ============== */}
@@ -459,6 +463,31 @@ export default function Admin() {
                     </div>
                     {a.details && Object.keys(a.details).length > 0 && (
                       <pre className="mt-2 text-xs bg-muted p-2 rounded overflow-x-auto">{JSON.stringify(a.details, null, 2)}</pre>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="abuse">
+          <Card>
+            <CardHeader><CardTitle>AI abuse / jailbreak attempts (last 100)</CardTitle></CardHeader>
+            <CardContent>
+              <div className="space-y-2 max-h-[640px] overflow-y-auto text-sm">
+                {abuse.length === 0 && <p className="text-muted-foreground">No abuse attempts logged. 🎉</p>}
+                {abuse.map((a) => (
+                  <div key={a.id} className="border border-destructive/40 rounded-lg p-3">
+                    <div className="flex items-center justify-between">
+                      <Badge variant="destructive">{a.reason}</Badge>
+                      <span className="text-xs text-muted-foreground">{new Date(a.created_at).toLocaleString()}</span>
+                    </div>
+                    <div className="mt-1 text-xs text-muted-foreground">
+                      by <span className="font-medium text-foreground">{a.user_email ?? a.user_id}</span>
+                    </div>
+                    {a.excerpt && (
+                      <pre className="mt-2 text-xs bg-muted p-2 rounded overflow-x-auto whitespace-pre-wrap">{a.excerpt}</pre>
                     )}
                   </div>
                 ))}

@@ -50,6 +50,54 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_abuse_log: {
+        Row: {
+          created_at: string
+          excerpt: string | null
+          id: string
+          ip_address: string | null
+          reason: string
+          user_email: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          excerpt?: string | null
+          id?: string
+          ip_address?: string | null
+          reason: string
+          user_email?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          excerpt?: string | null
+          id?: string
+          ip_address?: string | null
+          reason?: string
+          user_email?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      ai_rate_limits: {
+        Row: {
+          request_count: number
+          user_id: string
+          window_start: string
+        }
+        Insert: {
+          request_count?: number
+          user_id: string
+          window_start: string
+        }
+        Update: {
+          request_count?: number
+          user_id?: string
+          window_start?: string
+        }
+        Relationships: []
+      }
       announcements: {
         Row: {
           active: boolean
