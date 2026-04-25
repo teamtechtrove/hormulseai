@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_audit_log: {
+        Row: {
+          action: string
+          actor_email: string | null
+          actor_id: string
+          created_at: string
+          details: Json
+          id: string
+          ip_address: string | null
+          target_id: string | null
+          target_type: string | null
+        }
+        Insert: {
+          action: string
+          actor_email?: string | null
+          actor_id: string
+          created_at?: string
+          details?: Json
+          id?: string
+          ip_address?: string | null
+          target_id?: string | null
+          target_type?: string | null
+        }
+        Update: {
+          action?: string
+          actor_email?: string | null
+          actor_id?: string
+          created_at?: string
+          details?: Json
+          id?: string
+          ip_address?: string | null
+          target_id?: string | null
+          target_type?: string | null
+        }
+        Relationships: []
+      }
       announcements: {
         Row: {
           active: boolean
@@ -53,6 +89,33 @@ export type Database = {
           key?: string
           updated_at?: string
           value?: Json
+        }
+        Relationships: []
+      }
+      broadcasts: {
+        Row: {
+          body: string
+          created_at: string
+          created_by: string
+          id: string
+          level: string
+          title: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          created_by: string
+          id?: string
+          level?: string
+          title: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          created_by?: string
+          id?: string
+          level?: string
+          title?: string
         }
         Relationships: []
       }
@@ -313,6 +376,39 @@ export type Database = {
         }
         Relationships: []
       }
+      user_notifications: {
+        Row: {
+          body: string
+          broadcast_id: string | null
+          created_at: string
+          id: string
+          level: string
+          read_at: string | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          body: string
+          broadcast_id?: string | null
+          created_at?: string
+          id?: string
+          level?: string
+          read_at?: string | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          body?: string
+          broadcast_id?: string | null
+          created_at?: string
+          id?: string
+          level?: string
+          read_at?: string | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -334,6 +430,33 @@ export type Database = {
         }
         Relationships: []
       }
+      user_status: {
+        Row: {
+          banned: boolean
+          banned_at: string | null
+          banned_by: string | null
+          banned_reason: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          banned?: boolean
+          banned_at?: string | null
+          banned_by?: string | null
+          banned_reason?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          banned?: boolean
+          banned_at?: string | null
+          banned_by?: string | null
+          banned_reason?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -345,6 +468,16 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      is_banned: { Args: { _user_id: string }; Returns: boolean }
+      log_admin_action: {
+        Args: {
+          _action: string
+          _details?: Json
+          _target_id?: string
+          _target_type?: string
+        }
+        Returns: string
       }
     }
     Enums: {
