@@ -179,11 +179,16 @@ export default function Chat() {
         contentType: file.type, upsert: false,
       });
       if (upErr) throw upErr;
-      const { data: pub } = supabase.storage.from("uploads").getPublicUrl(path);
-      const userMsg: Msg = { role: "user", content: "📷 Analyze this image", image_url: pub.publicUrl };
+      // Bucket is private — use a short-lived signed URL for display only.
+      const { data: signed } = await supabase.storage
+        .from("uploads")
+        .createSignedUrl(path, 60 * 60); // 1 hour
+      const displayUrl = signed?.signedUrl ?? "";
+      const userMsg: Msg = { role: "user", content: "📷 Analyze this image", image_url: displayUrl };
       setMessages((m) => [...m, userMsg, { role: "assistant", content: "" }]);
+      // Store the storage path (not a signed URL) so we can re-sign later.
       await supabase.from("chat_messages").insert({
-        session_id: sessionId, user_id: user.id, role: "user", content: userMsg.content, image_url: pub.publicUrl,
+        session_id: sessionId, user_id: user.id, role: "user", content: userMsg.content, image_url: path,
       });
       await supabase.from("uploads").insert({ user_id: user.id, file_path: path, mime: file.type, size: file.size });
 
