@@ -29,13 +29,13 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/about" element={<About />} />
             <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/chat" element={<Chat />} />
               <Route path="/tracking" element={<Tracking />} />
               <Route path="/plan" element={<DailyPlan />} />
               <Route path="/education" element={<Education />} />
-              <Route path="/about" element={<About />} />
               <Route path="/admin" element={<AdminRoute><Admin /></AdminRoute>} />
             </Route>
             <Route path="*" element={<NotFound />} />
