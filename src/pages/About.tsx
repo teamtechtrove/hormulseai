@@ -106,6 +106,7 @@ export default function About() {
           </Accordion>
         </CardContent>
       </Card>
+      </main>
     </div>
   );
 }
