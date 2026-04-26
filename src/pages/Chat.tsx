@@ -110,10 +110,13 @@ export default function Chat() {
       });
 
       if (!resp.ok) {
-        if (resp.status === 429) toast.error("Rate limit reached. Try again shortly.");
-        else if (resp.status === 402) toast.error("AI credits exhausted. Add credits in workspace settings.");
-        else toast.error("AI error");
-        setMessages((m) => m.slice(0, -1));
+        let msg = `AI error (${resp.status})`;
+        try {
+          const errJson = await resp.json();
+          if (errJson?.error) msg = errJson.error;
+        } catch { /* ignore */ }
+        toast.error(msg);
+        setMessages((m) => m.slice(0, -1)); // remove empty assistant placeholder
         return;
       }
 
