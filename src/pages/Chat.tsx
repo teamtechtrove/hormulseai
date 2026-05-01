@@ -21,6 +21,8 @@ export default function Chat() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [welcome, setWelcome] = useState<string>("");
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [provider, setProvider] = useState<"lovable" | "deepseek" | "anthropic" | "groq">("lovable");
   const fileRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -28,6 +30,12 @@ export default function Chat() {
     supabase.from("app_settings").select("value").eq("key", "ai").maybeSingle()
       .then(({ data }) => setWelcome((data?.value as any)?.welcome_message ?? "Hi! How can I help today?"));
   }, []);
+
+  useEffect(() => {
+    if (!user) { setIsAdmin(false); return; }
+    supabase.from("user_roles").select("role").eq("user_id", user.id).eq("role", "admin").maybeSingle()
+      .then(({ data }) => setIsAdmin(!!data));
+  }, [user]);
 
   useEffect(() => {
     if (!user) return;
