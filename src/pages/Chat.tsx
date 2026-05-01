@@ -113,6 +113,7 @@ export default function Chat() {
         },
         body: JSON.stringify({
           sessionId,
+          provider: isAdmin ? provider : undefined,
           messages: [...messages, userMsg].map((m) => ({ role: m.role, content: m.content })),
         }),
       });
