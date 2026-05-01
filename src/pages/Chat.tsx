@@ -271,6 +271,23 @@ export default function Chat() {
             </div>
           ))}
         </div>
+        {isAdmin && (
+          <div className="border-t border-border px-3 py-2 flex items-center gap-2 text-xs text-muted-foreground">
+            <span>Model:</span>
+            <select
+              value={provider}
+              onChange={(e) => setProvider(e.target.value as any)}
+              className="bg-background border border-border rounded px-2 py-1 text-xs"
+              disabled={loading}
+            >
+              <option value="lovable">Gemini (Lovable AI)</option>
+              <option value="deepseek">DeepSeek</option>
+              <option value="anthropic">Claude (Anthropic)</option>
+              <option value="groq">Groq Llama 3.3</option>
+            </select>
+            <span className="ml-auto opacity-60">Admin only</span>
+          </div>
+        )}
         <form onSubmit={sendMessage} className="border-t border-border p-3 flex gap-2">
           <input ref={fileRef} type="file" accept="image/*" onChange={onUpload} className="hidden" />
           <Button type="button" variant="outline" size="icon" onClick={() => fileRef.current?.click()} disabled={loading}>
