@@ -21,6 +21,8 @@ export default function Chat() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [welcome, setWelcome] = useState<string>("");
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [provider, setProvider] = useState<"lovable" | "deepseek" | "anthropic" | "groq">("lovable");
   const fileRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -28,6 +30,12 @@ export default function Chat() {
     supabase.from("app_settings").select("value").eq("key", "ai").maybeSingle()
       .then(({ data }) => setWelcome((data?.value as any)?.welcome_message ?? "Hi! How can I help today?"));
   }, []);
+
+  useEffect(() => {
+    if (!user) { setIsAdmin(false); return; }
+    supabase.from("user_roles").select("role").eq("user_id", user.id).eq("role", "admin").maybeSingle()
+      .then(({ data }) => setIsAdmin(!!data));
+  }, [user]);
 
   useEffect(() => {
     if (!user) return;
@@ -105,6 +113,7 @@ export default function Chat() {
         },
         body: JSON.stringify({
           sessionId,
+          provider: isAdmin ? provider : undefined,
           messages: [...messages, userMsg].map((m) => ({ role: m.role, content: m.content })),
         }),
       });
@@ -262,6 +271,23 @@ export default function Chat() {
             </div>
           ))}
         </div>
+        {isAdmin && (
+          <div className="border-t border-border px-3 py-2 flex items-center gap-2 text-xs text-muted-foreground">
+            <span>Model:</span>
+            <select
+              value={provider}
+              onChange={(e) => setProvider(e.target.value as any)}
+              className="bg-background border border-border rounded px-2 py-1 text-xs"
+              disabled={loading}
+            >
+              <option value="lovable">Gemini (Lovable AI)</option>
+              <option value="deepseek">DeepSeek</option>
+              <option value="anthropic">Claude (Anthropic)</option>
+              <option value="groq">Groq Llama 3.3</option>
+            </select>
+            <span className="ml-auto opacity-60">Admin only</span>
+          </div>
+        )}
         <form onSubmit={sendMessage} className="border-t border-border p-3 flex gap-2">
           <input ref={fileRef} type="file" accept="image/*" onChange={onUpload} className="hidden" />
           <Button type="button" variant="outline" size="icon" onClick={() => fileRef.current?.click()} disabled={loading}>
