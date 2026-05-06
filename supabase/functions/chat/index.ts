@@ -127,7 +127,12 @@ async function runWebSearch(query: string): Promise<string> {
   }
 }
 
-async function runImageGen(prompt: string, apiKey: string): Promise<{ ok: boolean; dataUrl?: string; error?: string }> {
+async function runImageGen(
+  prompt: string,
+  apiKey: string,
+  admin: any,
+  userId: string,
+): Promise<{ ok: boolean; url?: string; error?: string }> {
   try {
     const r = await fetch(LOVABLE_GATEWAY, {
       method: "POST",
@@ -138,11 +143,39 @@ async function runImageGen(prompt: string, apiKey: string): Promise<{ ok: boolea
         modalities: ["image", "text"],
       }),
     });
-    if (!r.ok) return { ok: false, error: `Image gen failed (${r.status})` };
+    if (!r.ok) {
+      const t = await r.text().catch(() => "");
+      return { ok: false, error: `Image gen failed (${r.status}) ${t.slice(0, 120)}` };
+    }
     const j = await r.json();
-    const url = j.choices?.[0]?.message?.images?.[0]?.image_url?.url;
-    if (!url) return { ok: false, error: "No image returned" };
-    return { ok: true, dataUrl: url };
+    const dataUrl: string | undefined = j.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+    if (!dataUrl || !dataUrl.startsWith("data:")) return { ok: false, error: "No image returned" };
+
+    // data:image/png;base64,XXXX
+    const comma = dataUrl.indexOf(",");
+    const meta = dataUrl.slice(5, comma); // image/png;base64
+    const mime = meta.split(";")[0] || "image/png";
+    const ext = mime.split("/")[1] || "png";
+    const b64 = dataUrl.slice(comma + 1);
+
+    // base64 -> bytes
+    const bin = atob(b64);
+    const bytes = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+
+    const path = `${userId}/ai-${crypto.randomUUID()}.${ext}`;
+    const { error: upErr } = await admin.storage.from("uploads").upload(path, bytes, {
+      contentType: mime,
+      upsert: false,
+    });
+    if (upErr) return { ok: false, error: `Upload failed: ${upErr.message}` };
+
+    // 7 day signed URL
+    const { data: signed, error: sErr } = await admin.storage
+      .from("uploads").createSignedUrl(path, 60 * 60 * 24 * 7);
+    if (sErr || !signed?.signedUrl) return { ok: false, error: "Signed URL failed" };
+
+    return { ok: true, url: signed.signedUrl };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : String(e) };
   }
@@ -259,7 +292,19 @@ Deno.serve(async (req) => {
       if (roleRow) provider = requested as Provider;
     }
 
-    const trimmed = messages.slice(-MAX_HISTORY);
+    // Strip giant inline data URLs from history (they explode the token budget)
+    const sanitize = (s: any) => {
+      let t = typeof s === "string" ? s : String(s ?? "");
+      t = t.replace(/data:image\/[a-zA-Z0-9.+-]+;base64,[A-Za-z0-9+/=]+/g, "[image omitted]");
+      // Also drop markdown image tags whose URL is suspiciously long
+      t = t.replace(/!\[[^\]]*\]\((https?:\/\/[^\s)]{500,})\)/g, "[image omitted]");
+      if (t.length > 6000) t = t.slice(0, 6000) + "…";
+      return t;
+    };
+    const trimmed = messages.slice(-MAX_HISTORY).map((m: any) => ({
+      role: m.role,
+      content: sanitize(m.content),
+    }));
 
     // Injection scan
     const lastUser = [...trimmed].reverse().find((m: any) => m.role === "user");
@@ -349,10 +394,10 @@ Deno.serve(async (req) => {
             if (tc.function.name === "web_search") {
               result = await runWebSearch(String(args.query ?? ""));
             } else if (tc.function.name === "generate_image") {
-              const img = await runImageGen(String(args.prompt ?? ""), LOVABLE_API_KEY);
-              if (img.ok && img.dataUrl) {
-                imagesProduced.push(img.dataUrl);
-                result = "Image generated successfully and shown to user. Acknowledge briefly.";
+              const img = await runImageGen(String(args.prompt ?? ""), LOVABLE_API_KEY, admin, userId);
+              if (img.ok && img.url) {
+                imagesProduced.push(img.url);
+                result = "Image generated successfully and shown to user. Acknowledge briefly. Do NOT include the image URL in your reply — it is appended automatically.";
               } else {
                 result = `Image generation failed: ${img.error}`;
               }
