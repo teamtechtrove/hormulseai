@@ -292,7 +292,19 @@ Deno.serve(async (req) => {
       if (roleRow) provider = requested as Provider;
     }
 
-    const trimmed = messages.slice(-MAX_HISTORY);
+    // Strip giant inline data URLs from history (they explode the token budget)
+    const sanitize = (s: any) => {
+      let t = typeof s === "string" ? s : String(s ?? "");
+      t = t.replace(/data:image\/[a-zA-Z0-9.+-]+;base64,[A-Za-z0-9+/=]+/g, "[image omitted]");
+      // Also drop markdown image tags whose URL is suspiciously long
+      t = t.replace(/!\[[^\]]*\]\((https?:\/\/[^\s)]{500,})\)/g, "[image omitted]");
+      if (t.length > 6000) t = t.slice(0, 6000) + "…";
+      return t;
+    };
+    const trimmed = messages.slice(-MAX_HISTORY).map((m: any) => ({
+      role: m.role,
+      content: sanitize(m.content),
+    }));
 
     // Injection scan
     const lastUser = [...trimmed].reverse().find((m: any) => m.role === "user");
