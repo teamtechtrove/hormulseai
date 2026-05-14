@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { Sparkles, Loader2 } from "lucide-react";
+import Seo from "@/components/Seo";
 
 export default function Auth() {
   const navigate = useNavigate();
@@ -56,11 +57,17 @@ export default function Auth() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-hero p-4">
+      <Seo
+        title="Sign in or create an account — Hormulse AI"
+        description="Sign in to Hormulse AI or create a free account to start tracking your wellness and chatting with the AI companion."
+        path="/auth"
+      />
       <Card className="w-full max-w-md shadow-elevated">
         <CardHeader className="text-center">
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-primary shadow-glow mb-2">
             <Sparkles className="h-6 w-6 text-primary-foreground" />
           </div>
+          <h1 className="sr-only">Sign in to Hormulse AI</h1>
           <CardTitle className="text-2xl">Hormulse AI</CardTitle>
           <CardDescription>Sign in to your wellness assistant</CardDescription>
         </CardHeader>
