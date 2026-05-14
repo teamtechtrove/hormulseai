@@ -9,6 +9,7 @@ import { Slider } from "@/components/ui/slider";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import Seo from "@/components/Seo";
 
 export default function Tracking() {
   const { user } = useAuth();
@@ -64,30 +65,40 @@ export default function Tracking() {
   };
 
   return (
-    <div className="grid lg:grid-cols-2 gap-6 max-w-6xl mx-auto">
+    <div className="space-y-6 max-w-6xl mx-auto">
+      <Seo
+        title="Daily tracking — Hormulse AI"
+        description="Log your daily mood, sleep, energy, weight, and notes to power personalized insights and AI plans."
+        path="/tracking"
+      />
+      <div>
+        <h1 className="text-3xl font-bold">Daily tracking</h1>
+        <p className="text-muted-foreground">Log how you feel — Hormulse uses it to personalize your plan.</p>
+      </div>
+      <div className="grid lg:grid-cols-2 gap-6">
       <Card className="shadow-soft">
         <CardHeader><CardTitle>Log for {date}</CardTitle></CardHeader>
         <CardContent className="space-y-5">
           <div>
-            <Label>Date</Label>
-            <Input type="date" value={date} max={today} onChange={(e) => setDate(e.target.value)} />
+            <Label htmlFor="tr-date">Date</Label>
+            <Input id="tr-date" type="date" value={date} max={today} onChange={(e) => setDate(e.target.value)} />
           </div>
-          <RangeField label="Mood" value={mood} onChange={setMood} />
-          <RangeField label="Energy" value={energy} onChange={setEnergy} />
-          <RangeField label="Sleep quality" value={sleepQuality} onChange={setSleepQuality} />
+          <RangeField id="tr-mood" label="Mood" value={mood} onChange={setMood} />
+          <RangeField id="tr-energy" label="Energy" value={energy} onChange={setEnergy} />
+          <RangeField id="tr-sq" label="Sleep quality" value={sleepQuality} onChange={setSleepQuality} />
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label>Sleep hours</Label>
-              <Input type="number" step="0.1" value={sleepHours} onChange={(e) => setSleepHours(e.target.value)} />
+              <Label htmlFor="tr-sh">Sleep hours</Label>
+              <Input id="tr-sh" type="number" step="0.1" value={sleepHours} onChange={(e) => setSleepHours(e.target.value)} />
             </div>
             <div>
-              <Label>Weight (kg)</Label>
-              <Input type="number" step="0.1" value={weight} onChange={(e) => setWeight(e.target.value)} />
+              <Label htmlFor="tr-w">Weight (kg)</Label>
+              <Input id="tr-w" type="number" step="0.1" value={weight} onChange={(e) => setWeight(e.target.value)} />
             </div>
           </div>
           <div>
-            <Label>Notes</Label>
-            <Textarea rows={3} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Symptoms, observations…" />
+            <Label htmlFor="tr-notes">Notes</Label>
+            <Textarea id="tr-notes" rows={3} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Symptoms, observations…" />
           </div>
           <Button onClick={save} disabled={saving} className="w-full bg-gradient-primary">{saving ? "Saving…" : "Save log"}</Button>
         </CardContent>
@@ -112,18 +123,19 @@ export default function Tracking() {
           </div>
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 }
 
-function RangeField({ label, value, onChange }: { label: string; value: number; onChange: (v: number) => void }) {
+function RangeField({ id, label, value, onChange }: { id: string; label: string; value: number; onChange: (v: number) => void }) {
   return (
     <div>
       <div className="flex items-center justify-between mb-2">
-        <Label>{label}</Label>
+        <Label htmlFor={id}>{label}</Label>
         <span className="text-sm font-medium text-primary">{value}/10</span>
       </div>
-      <Slider min={1} max={10} step={1} value={[value]} onValueChange={(v) => onChange(v[0])} />
+      <Slider id={id} min={1} max={10} step={1} value={[value]} onValueChange={(v) => onChange(v[0])} />
     </div>
   );
 }
