@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Globe, Sparkles, ExternalLink, LogIn, LayoutDashboard } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import Seo from "@/components/Seo";
 
 export default function About() {
   const { user } = useAuth();
@@ -21,8 +22,24 @@ export default function About() {
 
   const portfolio = site.portfolio_url ?? "https://portfolioofarman.netlify.app/";
 
+  const faqJsonLd = useMemo(() => ({
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faq.map((f) => ({
+      "@type": "Question",
+      name: f.question,
+      acceptedAnswer: { "@type": "Answer", text: f.answer },
+    })),
+  }), [faq]);
+
   return (
     <div className="min-h-screen bg-background">
+      <Seo
+        title="About — Hormulse AI"
+        description="About Hormulse AI: an AI-powered wellness companion built by Arman to track mood, sleep, energy, and craft daily plans."
+        path="/about"
+        jsonLd={faq.length ? faqJsonLd : undefined}
+      />
       <header className="border-b border-border bg-card/60 backdrop-blur sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
