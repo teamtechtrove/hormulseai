@@ -68,7 +68,7 @@ export default function About() {
               <Sparkles className="h-6 w-6" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold">{site.name ?? "Hormulse AI"}</h1>
+              <h1 className="text-3xl font-bold">About {site.name ?? "Hormulse AI"}</h1>
               <p className="opacity-90">{site.tagline ?? "AI-powered hormone wellness"}</p>
             </div>
           </div>
