@@ -2,11 +2,17 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Sparkles, MessageSquare, Activity, CalendarCheck, ShieldCheck } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import Seo from "@/components/Seo";
 
 const Index = () => {
   const { user } = useAuth();
   return (
     <div className="min-h-screen bg-background">
+      <Seo
+        title="Hormulse AI — Your wellness companion"
+        description="Track mood, sleep & energy. Chat with an AI that knows your patterns and get a personalized plan every day."
+        path="/"
+      />
       <header className="container mx-auto flex items-center justify-between py-5">
         <div className="flex items-center gap-2">
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-primary shadow-glow">
@@ -41,7 +47,7 @@ const Index = () => {
             <Link to={user ? "/dashboard" : "/auth"}>{user ? "Open dashboard" : "Get started — it's free"}</Link>
           </Button>
           <Button asChild size="lg" variant="outline">
-            <Link to="/about">Learn more</Link>
+            <Link to="/about">Learn about our wellness approach</Link>
           </Button>
         </div>
       </section>
