@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
+import Seo from "@/components/Seo";
 
 type Msg = { id?: string; role: "user" | "assistant"; content: string; image_url?: string };
 type Session = { id: string; title: string; updated_at: string };
@@ -321,7 +322,7 @@ export default function Chat() {
             </button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-7 w-7 opacity-0 group-hover:opacity-100 focus:opacity-100">
+                <Button variant="ghost" size="icon" className="h-7 w-7 opacity-0 group-hover:opacity-100 focus:opacity-100" aria-label="Chat options">
                   <MoreHorizontal className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
@@ -342,7 +343,12 @@ export default function Chat() {
 
   return (
     <div className="grid lg:grid-cols-[280px_1fr] gap-4 h-[calc(100vh-8rem)] max-w-6xl mx-auto">
-      {/* Desktop sidebar */}
+      <Seo
+        title="AI Chat — Hormulse AI"
+        description="Chat with the Hormulse AI wellness assistant. Streaming answers, image analysis, and personalized hormone guidance."
+        path="/chat"
+      />
+      <h1 className="sr-only">AI Chat with Hormulse</h1>
       <Card className="hidden lg:flex flex-col p-3 shadow-soft">{Sidebar}</Card>
 
       {/* Chat panel */}
@@ -351,7 +357,7 @@ export default function Chat() {
         <div className="flex items-center gap-2 border-b border-border px-3 py-2">
           <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="lg:hidden">
+              <Button variant="ghost" size="icon" className="lg:hidden" aria-label="Open chat list">
                 <Menu className="h-5 w-5" />
               </Button>
             </SheetTrigger>
@@ -360,7 +366,7 @@ export default function Chat() {
               {Sidebar}
             </SheetContent>
           </Sheet>
-          <Button variant="ghost" size="icon" className="lg:hidden" onClick={newSession} title="New chat">
+          <Button variant="ghost" size="icon" className="lg:hidden" onClick={newSession} aria-label="New chat" title="New chat">
             <Plus className="h-5 w-5" />
           </Button>
           <div className="flex-1 truncate text-sm font-medium">
@@ -419,7 +425,7 @@ export default function Chat() {
                       {m.role === "user" ? "You" : "Hormulse AI"}
                     </div>
                     {m.image_url && (
-                      <img src={m.image_url} className="rounded-lg mb-2 max-h-60" alt="upload" />
+                      <img src={m.image_url} className="rounded-lg mb-2 max-h-60" alt="Photo uploaded for AI analysis" />
                     )}
                     {m.role === "assistant" ? (
                       <div className="prose prose-sm dark:prose-invert max-w-none break-words">
@@ -459,7 +465,7 @@ export default function Chat() {
           <form onSubmit={(e) => { e.preventDefault(); send(); }}
             className="max-w-3xl mx-auto flex items-end gap-2 rounded-2xl border border-border bg-background p-2 focus-within:ring-2 focus-within:ring-ring">
             <input ref={fileRef} type="file" accept="image/*" onChange={onUpload} className="hidden" />
-            <Button type="button" variant="ghost" size="icon" onClick={() => fileRef.current?.click()} disabled={loading} title="Upload image">
+            <Button type="button" variant="ghost" size="icon" onClick={() => fileRef.current?.click()} disabled={loading} aria-label="Upload image" title="Upload image">
               <ImageIcon className="h-4 w-4" />
             </Button>
             <textarea
@@ -472,7 +478,7 @@ export default function Chat() {
               disabled={loading}
               className="flex-1 resize-none bg-transparent outline-none px-2 py-2 text-sm max-h-[200px]"
             />
-            <Button type="submit" size="icon" disabled={loading || !input.trim()} className="rounded-xl">
+            <Button type="submit" size="icon" disabled={loading || !input.trim()} className="rounded-xl" aria-label="Send message">
               {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
             </Button>
           </form>
