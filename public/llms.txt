@@ -1,0 +1,17 @@
+# Hormulse AI
+
+> AI-powered hormone wellness companion. Track mood, sleep, and energy. Chat with an AI that knows your patterns and get a personalized daily plan.
+
+## Pages
+
+- [Home](/): Product overview and getting started.
+- [About](/about): What Hormulse AI is, who built it, and FAQ.
+- [Sign in](/auth): Sign in or create an account.
+
+## Optional
+
+- [Dashboard](/dashboard): Personal wellness snapshot (auth required).
+- [AI Chat](/chat): Streaming AI chat with image analysis (auth required).
+- [Tracking](/tracking): Daily mood/sleep/energy logging (auth required).
+- [Daily Plan](/plan): AI-generated personalized plan (auth required).
+- [Education](/education): Hormone wellness articles (auth required).
