@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Activity, MessageSquare, CalendarCheck, BookOpen, ArrowRight } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip } from "recharts";
 import { format, subDays } from "date-fns";
+import Seo from "@/components/Seo";
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -34,6 +35,11 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6 max-w-6xl mx-auto">
+      <Seo
+        title="Dashboard — Hormulse AI"
+        description="Your wellness snapshot: recent logs, mood and energy trends, and quick links to chat, tracking, and your daily plan."
+        path="/dashboard"
+      />
       <div>
         <h1 className="text-3xl font-bold">Welcome back, {profile?.display_name || "friend"} 👋</h1>
         <p className="text-muted-foreground">Here's a snapshot of your wellness journey.</p>

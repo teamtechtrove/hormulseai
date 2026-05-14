@@ -118,7 +118,7 @@ export default function AppLayout() {
             </div>
             <span className="font-semibold">Hormulse AI</span>
           </div>
-          <Button variant="ghost" size="icon" onClick={() => setOpen(true)}>
+          <Button variant="ghost" size="icon" onClick={() => setOpen(true)} aria-label="Open navigation menu">
             <Menu className="h-5 w-5" />
           </Button>
         </header>

@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import ReactMarkdown from "react-markdown";
+import Seo from "@/components/Seo";
 
 export default function Education() {
   const [articles, setArticles] = useState<any[]>([]);
@@ -13,8 +14,22 @@ export default function Education() {
       .then(({ data }) => { setArticles(data ?? []); setActive((data ?? [])[0] ?? null); });
   }, []);
 
+  const articleJsonLd = useMemo(() => active ? ({
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: active.title,
+    articleSection: active.category ?? undefined,
+    articleBody: active.content,
+  }) : undefined, [active]);
+
   return (
     <div className="grid md:grid-cols-[280px_1fr] gap-6 max-w-6xl mx-auto">
+      <Seo
+        title="Education — Hormulse AI"
+        description="Hormone wellness articles: sleep, nutrition, energy, stress, and movement — curated to help you understand your body."
+        path="/education"
+        jsonLd={articleJsonLd}
+      />
       <div className="space-y-2">
         <h1 className="text-2xl font-bold mb-3">Education</h1>
         {articles.map((a) => (
