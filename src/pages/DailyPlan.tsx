@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Loader2, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import Seo from "@/components/Seo";
 
 const URL_GEN = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-plan`;
 
@@ -42,6 +43,11 @@ export default function DailyPlan() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
+      <Seo
+        title="Daily plan — Hormulse AI"
+        description="Generate your AI-personalized daily wellness plan based on your recent mood, sleep, and energy logs."
+        path="/plan"
+      />
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Daily plan</h1>
