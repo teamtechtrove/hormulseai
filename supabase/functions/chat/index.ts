@@ -427,12 +427,16 @@ Deno.serve(async (req) => {
             if (tc.function.name === "web_search") {
               result = await runWebSearch(String(args.query ?? ""));
             } else if (tc.function.name === "generate_image") {
-              const img = await runImageGen(String(args.prompt ?? ""), LOVABLE_API_KEY, admin, userId);
-              if (img.ok && img.url) {
-                imagesProduced.push(img.url);
-                result = "Image generated successfully and shown to user. Acknowledge briefly. Do NOT include the image URL in your reply — it is appended automatically.";
+              if (userPlan !== "pro" && userPlan !== "pro_plus") {
+                result = "Image generation requires the Pro plan. Tell the user politely to upgrade at /pricing.";
               } else {
-                result = `Image generation failed: ${img.error}`;
+                const img = await runImageGen(String(args.prompt ?? ""), LOVABLE_API_KEY, admin, userId);
+                if (img.ok && img.url) {
+                  imagesProduced.push(img.url);
+                  result = "Image generated successfully and shown to user. Acknowledge briefly. Do NOT include the image URL in your reply — it is appended automatically.";
+                } else {
+                  result = `Image generation failed: ${img.error}`;
+                }
               }
             } else if (tc.function.name === "get_personal_context") {
               result = await runPersonalContext(admin, userId);
