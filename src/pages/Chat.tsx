@@ -392,6 +392,19 @@ export default function Chat() {
           <div className="flex-1 truncate text-sm font-medium">
             {sessions.find((s) => s.id === activeSession)?.title ?? "New chat"}
           </div>
+          {Number.isFinite(dailyCap) && (
+            <Link
+              to="/pricing"
+              className={`text-xs px-2 py-1 rounded-md border ${
+                remaining === 0 ? "border-destructive text-destructive bg-destructive/10"
+                : remaining <= Math.max(1, Math.floor(dailyCap * 0.2)) ? "border-accent text-accent bg-accent/10"
+                : "border-border text-muted-foreground"
+              }`}
+              title={`${planDef.name} plan — ${messagesToday}/${dailyCap} today`}
+            >
+              {messagesToday}/{dailyCap}
+            </Link>
+          )}
           {isAdmin && (
             <select
               value={provider}
