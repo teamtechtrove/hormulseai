@@ -272,7 +272,26 @@ Deno.serve(async (req) => {
     const { data: status } = await admin.from("user_status").select("banned,banned_reason").eq("user_id", userId).maybeSingle();
     if (status?.banned) return json({ error: `Account suspended${status.banned_reason ? `: ${status.banned_reason}` : "."}` }, 403);
 
-    // Rate limit
+    // === Plan + daily quota ===
+    const { data: planRow } = await admin.rpc("get_user_plan", { _user_id: userId });
+    const userPlan: "free" | "lite" | "pro" | "pro_plus" = (planRow as any) ?? "free";
+    const DAILY_CAPS: Record<string, number> = { free: 15, lite: 100, pro: 100000, pro_plus: 100000 };
+    const today = new Date().toISOString().slice(0, 10);
+    const { data: usage } = await admin.from("usage_counters")
+      .select("message_count").eq("user_id", userId).eq("date", today).maybeSingle();
+    const used = usage?.message_count ?? 0;
+    const cap = DAILY_CAPS[userPlan];
+    if (used >= cap) {
+      return json({
+        error: `Daily limit reached (${cap} messages on the ${userPlan} plan). Upgrade for more.`,
+        code: "plan_limit",
+        plan: userPlan,
+        used, cap,
+        upgradeUrl: "/pricing",
+      }, 402);
+    }
+
+    // Per-minute burst limit
     const windowStart = new Date(Math.floor(Date.now() / 60_000) * 60_000).toISOString();
     const { data: rl } = await admin.from("ai_rate_limits").select("request_count").eq("user_id", userId).eq("window_start", windowStart).maybeSingle();
     const count = rl?.request_count ?? 0;
@@ -283,14 +302,28 @@ Deno.serve(async (req) => {
     const messages = Array.isArray(body?.messages) ? body.messages : [];
     if (!messages.length) return json({ error: "messages required" }, 400);
 
-    // Provider selection — admins only.
-    let provider: Provider = "lovable";
+    // Provider selection — admins can pick any; free users are forced to Groq; lite users get Groq/DeepSeek.
+    let provider: Provider = userPlan === "free" ? "groq"
+      : userPlan === "lite" ? "deepseek"
+      : "lovable";
     const requested = String(body?.provider ?? "").toLowerCase();
     if (["lovable", "deepseek", "anthropic", "groq"].includes(requested)) {
       const { data: roleRow } = await admin
         .from("user_roles").select("role").eq("user_id", userId).eq("role", "admin").maybeSingle();
-      if (roleRow) provider = requested as Provider;
+      if (roleRow) {
+        provider = requested as Provider;
+      } else if (userPlan === "pro" || userPlan === "pro_plus") {
+        provider = requested as Provider;
+      } else if (userPlan === "lite" && (requested === "deepseek" || requested === "groq")) {
+        provider = requested as Provider;
+      }
+      // free users: ignored, stays groq
     }
+
+    // Increment daily usage (fire-and-forget)
+    admin.from("usage_counters").upsert({
+      user_id: userId, date: today, message_count: used + 1, updated_at: new Date().toISOString(),
+    }).then(() => {});
 
     // Strip giant inline data URLs from history (they explode the token budget)
     const sanitize = (s: any) => {
