@@ -185,8 +185,13 @@ export default function Chat() {
 
       if (!resp.ok) {
         let msg = `AI error (${resp.status})`;
-        try { const j = await resp.json(); if (j?.error) msg = j.error; } catch { /* ignore */ }
-        toast.error(msg);
+        let isLimit = false;
+        try { const j = await resp.json(); if (j?.error) msg = j.error; if (j?.code === "plan_limit") isLimit = true; } catch { /* ignore */ }
+        if (isLimit) {
+          toast.error(msg, { action: { label: "Upgrade", onClick: () => (window.location.href = "/pricing") } });
+        } else {
+          toast.error(msg);
+        }
         setMessages((m) => m.slice(0, -1));
         return;
       }
@@ -237,6 +242,7 @@ export default function Chat() {
       setMessages((m) => m.slice(0, -1));
     } finally {
       setLoading(false);
+      refreshPlan();
       taRef.current?.focus();
     }
   };
@@ -265,6 +271,12 @@ export default function Chat() {
     const file = e.target.files?.[0];
     e.target.value = "";
     if (!file || !user) return;
+    if (!planDef.limits.uploads) {
+      toast.error("Image uploads require the Lite plan or higher.", {
+        action: { label: "Upgrade", onClick: () => (window.location.href = "/pricing") },
+      });
+      return;
+    }
     if (file.size > 10 * 1024 * 1024) return toast.error("Max 10MB");
     const sessionId = await ensureSession();
     if (!sessionId) return;
