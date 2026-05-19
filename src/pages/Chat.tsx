@@ -16,6 +16,9 @@ import {
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
 import Seo from "@/components/Seo";
+import { Link } from "react-router-dom";
+import { usePlan } from "@/hooks/usePlan";
+import { PLANS } from "@/lib/plans";
 
 type Msg = { id?: string; role: "user" | "assistant"; content: string; image_url?: string };
 type Session = { id: string; title: string; updated_at: string };
@@ -33,6 +36,11 @@ const SUGGESTIONS = [
 
 export default function Chat() {
   const { user, session } = useAuth();
+  const { plan, messagesToday, refresh: refreshPlan } = usePlan();
+  const planDef = PLANS[plan];
+  const isFree = plan === "free";
+  const dailyCap = planDef.dailyMessages;
+  const remaining = Number.isFinite(dailyCap) ? Math.max(0, dailyCap - messagesToday) : Infinity;
   const [sessions, setSessions] = useState<Session[]>([]);
   const [activeSession, setActiveSession] = useState<string | null>(null);
   const [messages, setMessages] = useState<Msg[]>([]);
