@@ -322,6 +322,54 @@ export type Database = {
         }
         Relationships: []
       }
+      payment_requests: {
+        Row: {
+          amount_bdt: number
+          created_at: string
+          id: string
+          notes: string | null
+          plan: Database["public"]["Enums"]["subscription_plan"]
+          reviewed_at: string | null
+          reviewed_by: string | null
+          screenshot_path: string | null
+          sender_msisdn: string | null
+          status: Database["public"]["Enums"]["payment_request_status"]
+          trx_id: string
+          user_email: string | null
+          user_id: string
+        }
+        Insert: {
+          amount_bdt: number
+          created_at?: string
+          id?: string
+          notes?: string | null
+          plan: Database["public"]["Enums"]["subscription_plan"]
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          screenshot_path?: string | null
+          sender_msisdn?: string | null
+          status?: Database["public"]["Enums"]["payment_request_status"]
+          trx_id: string
+          user_email?: string | null
+          user_id: string
+        }
+        Update: {
+          amount_bdt?: number
+          created_at?: string
+          id?: string
+          notes?: string | null
+          plan?: Database["public"]["Enums"]["subscription_plan"]
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          screenshot_path?: string | null
+          sender_msisdn?: string | null
+          status?: Database["public"]["Enums"]["payment_request_status"]
+          trx_id?: string
+          user_email?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -424,6 +472,27 @@ export type Database = {
         }
         Relationships: []
       }
+      usage_counters: {
+        Row: {
+          date: string
+          message_count: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          date?: string
+          message_count?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          date?: string
+          message_count?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_notifications: {
         Row: {
           body: string
@@ -505,11 +574,62 @@ export type Database = {
         }
         Relationships: []
       }
+      user_subscriptions: {
+        Row: {
+          created_at: string
+          expires_at: string | null
+          id: string
+          payment_ref: string | null
+          plan: Database["public"]["Enums"]["subscription_plan"]
+          started_at: string
+          status: Database["public"]["Enums"]["subscription_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          payment_ref?: string | null
+          plan?: Database["public"]["Enums"]["subscription_plan"]
+          started_at?: string
+          status?: Database["public"]["Enums"]["subscription_status"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          payment_ref?: string | null
+          plan?: Database["public"]["Enums"]["subscription_plan"]
+          started_at?: string
+          status?: Database["public"]["Enums"]["subscription_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      approve_payment_request: {
+        Args: { _request_id: string }
+        Returns: undefined
+      }
+      get_user_plan: {
+        Args: { _user_id: string }
+        Returns: Database["public"]["Enums"]["subscription_plan"]
+      }
+      has_min_plan: {
+        Args: {
+          _min: Database["public"]["Enums"]["subscription_plan"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -527,9 +647,16 @@ export type Database = {
         }
         Returns: string
       }
+      reject_payment_request: {
+        Args: { _reason: string; _request_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role: "admin" | "user"
+      payment_request_status: "pending" | "approved" | "rejected"
+      subscription_plan: "free" | "lite" | "pro" | "pro_plus"
+      subscription_status: "active" | "pending" | "expired" | "cancelled"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -658,6 +785,9 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "user"],
+      payment_request_status: ["pending", "approved", "rejected"],
+      subscription_plan: ["free", "lite", "pro", "pro_plus"],
+      subscription_status: ["active", "pending", "expired", "cancelled"],
     },
   },
 } as const
