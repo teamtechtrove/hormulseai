@@ -1,45 +1,68 @@
-# Fix: AI not responding
 
-## What's broken
+# Hormulse AI — Premium landing + real freemium system
 
-The `chat` edge function has several reliability issues introduced by the recent upgrade. The AI gateway itself works fine (verified directly), but the function around it is fragile:
+This is a large build. Splitting into 3 shippable phases so each can be reviewed before the next. Phase 1 first; confirm and I'll continue.
 
-1. **Aggressive Pro-model routing** — words like "explain", "why", "image" send every request to `google/gemini-2.5-pro` with full tool definitions. That's slow (often 10–20s per round) and combined with up to 4 tool rounds it can exceed the edge function CPU/wall-clock budget, leaving the client hanging with no response.
-2. **DuckDuckGo HTML scraping** frequently returns empty/CAPTCHA from datacenter IPs, so `web_search` silently degrades.
-3. **No streaming during tool use** — the current code does non-streaming gateway calls and only "fakes" a stream at the end, so any slowness looks like a frozen UI.
-4. **Errors aren't visible** — the function prints "AI provider error (xxx)" but the body of the upstream error is dropped, so we can't see why it failed.
-5. **Function may not be redeployed** since the last migration.
+## Phase 1 — Cinematic landing page (frontend only)
 
-## Plan
+Rebuild `src/pages/Index.tsx` as an enterprise-grade marketing site, inspired by ChatGPT / Claude / Perplexity landings. No fake demos, no placeholder logos.
 
-### 1. Simplify and harden `supabase/functions/chat/index.ts`
+Sections:
+- Sticky glass nav with logo, Pricing / About / Sign in / Get started
+- Hero: animated gradient headline, BDT-first positioning ("AI that costs less than your lunch"), dual CTA, trust strip
+- Live model strip — real providers we ship (Gemini, Claude, DeepSeek, Groq, GPT) as monochrome wordmarks with "Routed automatically" tagline
+- Feature grid (6 cards): Multi-model chat, Image understanding, Daily wellness plan, Tracking, Bangla-aware, Private by default
+- "Why Hormulse" comparison table: ChatGPT Plus ৳2,400 vs Hormulse Pro ৳199 — % of junior dev salary
+- Pricing section (4 tiers with real limits from spec):
+  - Free — ৳0 — 15 msgs/day, Groq only, no uploads, no saved history
+  - Lite — ৳99/mo — 100 msgs/day, DeepSeek+Groq, uploads, history
+  - Pro — ৳199/mo — unlimited, all models, image gen, priority — "Most popular"
+  - Pro+ — ৳399/mo — everything + early access, Claude Opus, longer context
+- "How payment works" 3-step (bKash send → screenshot → instant activation within 24h)
+- FAQ (real questions: refunds, bKash, data privacy, model choice)
+- Footer with credit: "Built by Arman Rafi — portfolio link"
 
-- **Default to Flash** for everything; only escalate to Pro when the user's last message is very long (>800 chars) or explicitly asks for deep reasoning ("step by step", "deep analysis"). Image / search intent does NOT need Pro — Flash handles tool calls fine.
-- **Stream the final answer directly** from the gateway (set `stream: true` on the last round) instead of buffering and re-chunking. The user sees tokens immediately.
-- **Cap tool rounds at 2** (was 4) to keep latency bounded.
-- **Return real upstream error bodies** in the JSON error so the client toast is informative.
-- **Make `web_search` resilient**: try DuckDuckGo, fall back to a clear "no results — answer from training" tool result so the model still replies.
-- **Skip tools when not needed**: only attach the `tools` array on the first round; if the model replies without calling tools, stream immediately.
-- **Trim conversation history** to the last 20 messages before sending — long sessions were inflating prompt size and latency.
-- Keep all existing safety: ban check, injection scan + abuse log, 30 req/min rate limit, `<user>` wrapping, system-prompt hardening.
+Design language: dark default, deep navy + teal/violet gradients, soft glow shadows, Inter/Space Grotesk pairing via existing tokens, motion via Tailwind + small framer-motion entrances.
 
-### 2. Improve client error surfacing in `src/pages/Chat.tsx`
+## Phase 2 — Real plan tiers + enforcement (backend)
 
-- When `resp.ok` is false, read the JSON body and show the actual error message in the toast (e.g. "AI credits exhausted", "Account suspended: …") instead of a generic "AI error".
-- Remove the empty assistant placeholder on error so the chat doesn't show a blank bubble.
+Database migration:
+- `subscription_plans` enum: `free | lite | pro | pro_plus`
+- `user_subscriptions` table: user_id, plan, status (`active|pending|expired`), started_at, expires_at, payment_ref
+- `usage_counters` table: user_id, date, message_count
+- `has_plan(user_id, plan)` security-definer function
+- RLS: users read own, admins manage all
 
-### 3. Redeploy the function
+`supabase/functions/chat/index.ts` enforcement:
+- Resolve caller's active plan
+- Per-plan daily message cap (15 / 100 / ∞ / ∞)
+- Block file/image uploads unless plan ≥ lite
+- Block model selection: free → Groq only; lite → DeepSeek+Groq; pro/pro+ → all
+- Return structured 402-style payload `{error:"limit_reached", remaining:0, upgradeUrl:"/pricing"}` so the UI can show the friction prompt
+- Skip history save for free tier (matches spec "cannot save chat history")
 
-After edits, deploy `chat` so the live version matches the source.
+Chat UI:
+- Live "X / 15 messages today" pill for free users; turns amber at 10, red at 14
+- Upgrade modal on limit-hit and on attempted upload/history-save while free
 
-### 4. Verify
+## Phase 3 — bKash manual activation (Phase 1 of spec)
 
-- Direct `curl` test of the deployed function with a real auth token (via the curl_edge_functions tool) for "hi", a long question, and an image-generation request.
-- Check edge function logs to confirm no errors.
+- `/pricing` route + `/checkout/:plan` route
+- Checkout page shows: bKash merchant number, exact BDT amount, reference code (= user id prefix), upload screenshot field → `uploads` bucket
+- `payment_requests` table: user_id, plan, amount, trx_id, screenshot_path, status (`pending|approved|rejected`), reviewed_by, reviewed_at
+- Admin page `/admin` gets a "Payment requests" tab to approve → writes `user_subscriptions` with 30-day expiry
+- Email/in-app notification on approval via existing `user_notifications` table
+- Phase 2 (SSLCommerz) left as a clearly-marked TODO edge function stub — not wired until you have merchant credentials
 
-## Files to change
+## Out of scope (call out now)
+- SSLCommerz live integration (needs your merchant API keys)
+- Recurring billing (Moneybag/PortWallet) — Phase 3 of spec, later
+- Bangla model fine-tuning — research track, not code
+- Referral program — separate build
 
-- `supabase/functions/chat/index.ts` — rewrite tool loop + streaming + routing
-- `src/pages/Chat.tsx` — better error surfacing
+## Suggested order
+1. Ship Phase 1 (landing) — visible win, ~1 turn
+2. Ship Phase 2 (enforcement) — makes the freemium real
+3. Ship Phase 3 (bKash manual) — unlocks first revenue
 
-No database migrations required — schema is correct.
+Reply "go phase 1" (or all three) and I'll start. If you want any tier price/limit changed before I build, tell me now.

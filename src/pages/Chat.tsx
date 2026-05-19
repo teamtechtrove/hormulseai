@@ -16,6 +16,9 @@ import {
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
 import Seo from "@/components/Seo";
+import { Link } from "react-router-dom";
+import { usePlan } from "@/hooks/usePlan";
+import { PLANS } from "@/lib/plans";
 
 type Msg = { id?: string; role: "user" | "assistant"; content: string; image_url?: string };
 type Session = { id: string; title: string; updated_at: string };
@@ -33,6 +36,11 @@ const SUGGESTIONS = [
 
 export default function Chat() {
   const { user, session } = useAuth();
+  const { plan, messagesToday, refresh: refreshPlan } = usePlan();
+  const planDef = PLANS[plan];
+  const isFree = plan === "free";
+  const dailyCap = planDef.dailyMessages;
+  const remaining = Number.isFinite(dailyCap) ? Math.max(0, dailyCap - messagesToday) : Infinity;
   const [sessions, setSessions] = useState<Session[]>([]);
   const [activeSession, setActiveSession] = useState<string | null>(null);
   const [messages, setMessages] = useState<Msg[]>([]);
@@ -177,8 +185,13 @@ export default function Chat() {
 
       if (!resp.ok) {
         let msg = `AI error (${resp.status})`;
-        try { const j = await resp.json(); if (j?.error) msg = j.error; } catch { /* ignore */ }
-        toast.error(msg);
+        let isLimit = false;
+        try { const j = await resp.json(); if (j?.error) msg = j.error; if (j?.code === "plan_limit") isLimit = true; } catch { /* ignore */ }
+        if (isLimit) {
+          toast.error(msg, { action: { label: "Upgrade", onClick: () => (window.location.href = "/pricing") } });
+        } else {
+          toast.error(msg);
+        }
         setMessages((m) => m.slice(0, -1));
         return;
       }
@@ -229,6 +242,7 @@ export default function Chat() {
       setMessages((m) => m.slice(0, -1));
     } finally {
       setLoading(false);
+      refreshPlan();
       taRef.current?.focus();
     }
   };
@@ -257,6 +271,12 @@ export default function Chat() {
     const file = e.target.files?.[0];
     e.target.value = "";
     if (!file || !user) return;
+    if (!planDef.limits.uploads) {
+      toast.error("Image uploads require the Lite plan or higher.", {
+        action: { label: "Upgrade", onClick: () => (window.location.href = "/pricing") },
+      });
+      return;
+    }
     if (file.size > 10 * 1024 * 1024) return toast.error("Max 10MB");
     const sessionId = await ensureSession();
     if (!sessionId) return;
@@ -372,6 +392,19 @@ export default function Chat() {
           <div className="flex-1 truncate text-sm font-medium">
             {sessions.find((s) => s.id === activeSession)?.title ?? "New chat"}
           </div>
+          {Number.isFinite(dailyCap) && (
+            <Link
+              to="/pricing"
+              className={`text-xs px-2 py-1 rounded-md border ${
+                remaining === 0 ? "border-destructive text-destructive bg-destructive/10"
+                : remaining <= Math.max(1, Math.floor(dailyCap * 0.2)) ? "border-accent text-accent bg-accent/10"
+                : "border-border text-muted-foreground"
+              }`}
+              title={`${planDef.name} plan — ${messagesToday}/${dailyCap} today`}
+            >
+              {messagesToday}/{dailyCap}
+            </Link>
+          )}
           {isAdmin && (
             <select
               value={provider}
