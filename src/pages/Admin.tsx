@@ -233,6 +233,10 @@ export default function Admin() {
         <TabsList className="flex-wrap h-auto">
           <TabsTrigger value="users"><Users className="h-4 w-4 mr-1" />Users</TabsTrigger>
           <TabsTrigger value="broadcast"><Send className="h-4 w-4 mr-1" />Broadcast</TabsTrigger>
+          <TabsTrigger value="payments">
+            <CreditCard className="h-4 w-4 mr-1" />Payments
+            {pendingCount > 0 && <Badge variant="destructive" className="ml-1">{pendingCount}</Badge>}
+          </TabsTrigger>
           <TabsTrigger value="ai">AI</TabsTrigger>
           <TabsTrigger value="site">Site</TabsTrigger>
           <TabsTrigger value="announcements">Announcements</TabsTrigger>
