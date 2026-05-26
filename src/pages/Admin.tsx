@@ -351,6 +351,79 @@ export default function Admin() {
           </Card>
         </TabsContent>
 
+        {/* ============== PAYMENTS ============== */}
+        <TabsContent value="payments">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between flex-wrap gap-2">
+                <span>bKash payment requests</span>
+                <Select value={paymentFilter} onValueChange={(v: any) => setPaymentFilter(v)}>
+                  <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="pending">Pending ({pendingCount})</SelectItem>
+                    <SelectItem value="approved">Approved</SelectItem>
+                    <SelectItem value="rejected">Rejected</SelectItem>
+                    <SelectItem value="all">All</SelectItem>
+                  </SelectContent>
+                </Select>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3 max-h-[700px] overflow-y-auto">
+                {filteredPayments.length === 0 && (
+                  <p className="text-sm text-muted-foreground">No {paymentFilter} payment requests.</p>
+                )}
+                {filteredPayments.map((p) => (
+                  <div key={p.id} className="border border-border rounded-lg p-4 space-y-2">
+                    <div className="flex items-center justify-between flex-wrap gap-2">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <Badge variant="default" className="uppercase">{p.plan}</Badge>
+                        <Badge variant="outline">৳{p.amount_bdt}</Badge>
+                        <Badge
+                          variant={p.status === "approved" ? "secondary" : p.status === "rejected" ? "destructive" : "outline"}
+                        >
+                          {p.status}
+                        </Badge>
+                      </div>
+                      <span className="text-xs text-muted-foreground">{new Date(p.created_at).toLocaleString()}</span>
+                    </div>
+                    <div className="grid md:grid-cols-2 gap-2 text-sm">
+                      <div><span className="text-muted-foreground">User:</span> {p.user_email ?? p.user_id}</div>
+                      <div><span className="text-muted-foreground">Sender:</span> {p.sender_msisdn ?? "—"}</div>
+                      <div className="md:col-span-2">
+                        <span className="text-muted-foreground">TRX ID:</span>{" "}
+                        <code className="bg-muted px-1.5 py-0.5 rounded">{p.trx_id}</code>
+                      </div>
+                      {p.notes && <div className="md:col-span-2 text-muted-foreground">Note: {p.notes}</div>}
+                    </div>
+                    <div className="flex flex-wrap gap-2 pt-1">
+                      {p.screenshot_path && (
+                        <Button size="sm" variant="outline" onClick={() => signedScreenshotUrl(p.screenshot_path)}>
+                          View screenshot
+                        </Button>
+                      )}
+                      {p.status === "pending" && (
+                        <>
+                          <Button size="sm" disabled={busy} onClick={() => approvePayment(p.id)}>
+                            <Check className="h-4 w-4 mr-1" />Approve & activate
+                          </Button>
+                          <ConfirmButton
+                            variant="destructive"
+                            label={<><X className="h-4 w-4 mr-1" />Reject</>}
+                            title="Reject this payment?"
+                            description="The user will be notified. They can re-submit with the correct transaction ID."
+                            onConfirm={() => rejectPayment(p.id, "Could not verify the bKash transaction.")}
+                          />
+                        </>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
         {/* ============== AI ============== */}
         <TabsContent value="ai">
           <Card><CardHeader><CardTitle>AI configuration</CardTitle></CardHeader><CardContent className="space-y-4">
