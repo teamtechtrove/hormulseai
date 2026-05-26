@@ -229,7 +229,7 @@ export default function Admin() {
         <Stat icon={Ban} label="Banned" value={Object.values(statuses).filter((s: any) => s.banned).length} />
       </div>
 
-      <Tabs defaultValue="users">
+      <Tabs defaultValue={pendingCount > 0 ? "payments" : "users"}>
         <TabsList className="flex-wrap h-auto">
           <TabsTrigger value="users"><Users className="h-4 w-4 mr-1" />Users</TabsTrigger>
           <TabsTrigger value="broadcast"><Send className="h-4 w-4 mr-1" />Broadcast</TabsTrigger>
