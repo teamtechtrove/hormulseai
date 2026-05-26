@@ -17,7 +17,7 @@ import {
 import { toast } from "sonner";
 import {
   Trash2, Pin, Plus, ShieldCheck, Users, MessageSquare, BookOpen, Settings,
-  Megaphone, Ban, KeyRound, ShieldAlert, Activity, Send, History, UserX,
+  Megaphone, Ban, KeyRound, ShieldAlert, Activity, Send, History, UserX, CreditCard, Check, X,
 } from "lucide-react";
 
 type AdminAction =
@@ -44,6 +44,8 @@ export default function Admin() {
   const [audit, setAudit] = useState<any[]>([]);
   const [abuse, setAbuse] = useState<any[]>([]);
   const [broadcast, setBroadcast] = useState({ title: "", body: "", level: "info", target: "all" });
+  const [payments, setPayments] = useState<any[]>([]);
+  const [paymentFilter, setPaymentFilter] = useState<"pending" | "approved" | "rejected" | "all">("pending");
   const [filter, setFilter] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -80,6 +82,8 @@ export default function Admin() {
     ]);
     supabase.from("ai_abuse_log").select("*").order("created_at", { ascending: false }).limit(100)
       .then(({ data }) => setAbuse(data ?? []));
+    supabase.from("payment_requests").select("*").order("created_at", { ascending: false }).limit(200)
+      .then(({ data }) => setPayments(data ?? []));
 
     const sMap: Record<string, any> = {};
     (status ?? []).forEach((s: any) => { sMap[s.user_id] = s; });
@@ -179,9 +183,33 @@ export default function Admin() {
     await supabase.from("faq_items").delete().eq("id", id); loadAll();
   };
 
+  // ============ PAYMENTS ============
+  const approvePayment = async (id: string) => {
+    setBusy(true);
+    const { error } = await supabase.rpc("approve_payment_request", { _request_id: id });
+    setBusy(false);
+    if (error) return toast.error(error.message);
+    toast.success("Payment approved & plan activated");
+    loadAll();
+  };
+  const rejectPayment = async (id: string, reason: string) => {
+    setBusy(true);
+    const { error } = await supabase.rpc("reject_payment_request", { _request_id: id, _reason: reason });
+    setBusy(false);
+    if (error) return toast.error(error.message);
+    toast.success("Payment rejected");
+    loadAll();
+  };
+  const signedScreenshotUrl = async (path: string) => {
+    const { data } = await supabase.storage.from("uploads").createSignedUrl(path, 300);
+    if (data?.signedUrl) window.open(data.signedUrl, "_blank");
+  };
+
   const filteredUsers = users.filter((u) =>
     !filter || u.email?.toLowerCase().includes(filter.toLowerCase()) || u.display_name?.toLowerCase().includes(filter.toLowerCase())
   );
+  const filteredPayments = payments.filter((p) => paymentFilter === "all" || p.status === paymentFilter);
+  const pendingCount = payments.filter((p) => p.status === "pending").length;
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
@@ -201,10 +229,14 @@ export default function Admin() {
         <Stat icon={Ban} label="Banned" value={Object.values(statuses).filter((s: any) => s.banned).length} />
       </div>
 
-      <Tabs defaultValue="users">
+      <Tabs defaultValue={pendingCount > 0 ? "payments" : "users"}>
         <TabsList className="flex-wrap h-auto">
           <TabsTrigger value="users"><Users className="h-4 w-4 mr-1" />Users</TabsTrigger>
           <TabsTrigger value="broadcast"><Send className="h-4 w-4 mr-1" />Broadcast</TabsTrigger>
+          <TabsTrigger value="payments">
+            <CreditCard className="h-4 w-4 mr-1" />Payments
+            {pendingCount > 0 && <Badge variant="destructive" className="ml-1">{pendingCount}</Badge>}
+          </TabsTrigger>
           <TabsTrigger value="ai">AI</TabsTrigger>
           <TabsTrigger value="site">Site</TabsTrigger>
           <TabsTrigger value="announcements">Announcements</TabsTrigger>
@@ -315,6 +347,79 @@ export default function Admin() {
               <Button onClick={sendBroadcast} disabled={busy}>
                 <Send className="h-4 w-4 mr-1" />Send
               </Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* ============== PAYMENTS ============== */}
+        <TabsContent value="payments">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between flex-wrap gap-2">
+                <span>bKash payment requests</span>
+                <Select value={paymentFilter} onValueChange={(v: any) => setPaymentFilter(v)}>
+                  <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="pending">Pending ({pendingCount})</SelectItem>
+                    <SelectItem value="approved">Approved</SelectItem>
+                    <SelectItem value="rejected">Rejected</SelectItem>
+                    <SelectItem value="all">All</SelectItem>
+                  </SelectContent>
+                </Select>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3 max-h-[700px] overflow-y-auto">
+                {filteredPayments.length === 0 && (
+                  <p className="text-sm text-muted-foreground">No {paymentFilter} payment requests.</p>
+                )}
+                {filteredPayments.map((p) => (
+                  <div key={p.id} className="border border-border rounded-lg p-4 space-y-2">
+                    <div className="flex items-center justify-between flex-wrap gap-2">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <Badge variant="default" className="uppercase">{p.plan}</Badge>
+                        <Badge variant="outline">৳{p.amount_bdt}</Badge>
+                        <Badge
+                          variant={p.status === "approved" ? "secondary" : p.status === "rejected" ? "destructive" : "outline"}
+                        >
+                          {p.status}
+                        </Badge>
+                      </div>
+                      <span className="text-xs text-muted-foreground">{new Date(p.created_at).toLocaleString()}</span>
+                    </div>
+                    <div className="grid md:grid-cols-2 gap-2 text-sm">
+                      <div><span className="text-muted-foreground">User:</span> {p.user_email ?? p.user_id}</div>
+                      <div><span className="text-muted-foreground">Sender:</span> {p.sender_msisdn ?? "—"}</div>
+                      <div className="md:col-span-2">
+                        <span className="text-muted-foreground">TRX ID:</span>{" "}
+                        <code className="bg-muted px-1.5 py-0.5 rounded">{p.trx_id}</code>
+                      </div>
+                      {p.notes && <div className="md:col-span-2 text-muted-foreground">Note: {p.notes}</div>}
+                    </div>
+                    <div className="flex flex-wrap gap-2 pt-1">
+                      {p.screenshot_path && (
+                        <Button size="sm" variant="outline" onClick={() => signedScreenshotUrl(p.screenshot_path)}>
+                          View screenshot
+                        </Button>
+                      )}
+                      {p.status === "pending" && (
+                        <>
+                          <Button size="sm" disabled={busy} onClick={() => approvePayment(p.id)}>
+                            <Check className="h-4 w-4 mr-1" />Approve & activate
+                          </Button>
+                          <ConfirmButton
+                            variant="destructive"
+                            label={<><X className="h-4 w-4 mr-1" />Reject</>}
+                            title="Reject this payment?"
+                            description="The user will be notified. They can re-submit with the correct transaction ID."
+                            onConfirm={() => rejectPayment(p.id, "Could not verify the bKash transaction.")}
+                          />
+                        </>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
