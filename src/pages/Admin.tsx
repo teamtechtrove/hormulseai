@@ -82,6 +82,8 @@ export default function Admin() {
     ]);
     supabase.from("ai_abuse_log").select("*").order("created_at", { ascending: false }).limit(100)
       .then(({ data }) => setAbuse(data ?? []));
+    supabase.from("payment_requests").select("*").order("created_at", { ascending: false }).limit(200)
+      .then(({ data }) => setPayments(data ?? []));
 
     const sMap: Record<string, any> = {};
     (status ?? []).forEach((s: any) => { sMap[s.user_id] = s; });
