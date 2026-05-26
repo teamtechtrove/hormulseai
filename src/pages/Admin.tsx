@@ -44,6 +44,8 @@ export default function Admin() {
   const [audit, setAudit] = useState<any[]>([]);
   const [abuse, setAbuse] = useState<any[]>([]);
   const [broadcast, setBroadcast] = useState({ title: "", body: "", level: "info", target: "all" });
+  const [payments, setPayments] = useState<any[]>([]);
+  const [paymentFilter, setPaymentFilter] = useState<"pending" | "approved" | "rejected" | "all">("pending");
   const [filter, setFilter] = useState("");
   const [busy, setBusy] = useState(false);
 
