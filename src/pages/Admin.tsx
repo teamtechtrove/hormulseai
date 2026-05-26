@@ -17,7 +17,7 @@ import {
 import { toast } from "sonner";
 import {
   Trash2, Pin, Plus, ShieldCheck, Users, MessageSquare, BookOpen, Settings,
-  Megaphone, Ban, KeyRound, ShieldAlert, Activity, Send, History, UserX,
+  Megaphone, Ban, KeyRound, ShieldAlert, Activity, Send, History, UserX, CreditCard, Check, X,
 } from "lucide-react";
 
 type AdminAction =
