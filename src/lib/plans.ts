@@ -91,7 +91,7 @@ export const PLANS: Record<PlanId, PlanDef> = {
 export const PLAN_ORDER: PlanId[] = ["free", "lite", "pro", "pro_plus"];
 
 export const BKASH = {
-  merchant: "01700-000000", // TODO: replace with real merchant number in admin settings
+  merchant: "01956790635",
   type: "Merchant",
   reference: (uid: string) => `HRM-${uid.slice(0, 6).toUpperCase()}`,
 };
