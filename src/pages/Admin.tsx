@@ -183,11 +183,33 @@ export default function Admin() {
     await supabase.from("faq_items").delete().eq("id", id); loadAll();
   };
 
+  // ============ PAYMENTS ============
+  const approvePayment = async (id: string) => {
+    setBusy(true);
+    const { error } = await supabase.rpc("approve_payment_request", { _request_id: id });
+    setBusy(false);
+    if (error) return toast.error(error.message);
+    toast.success("Payment approved & plan activated");
+    loadAll();
+  };
+  const rejectPayment = async (id: string, reason: string) => {
+    setBusy(true);
+    const { error } = await supabase.rpc("reject_payment_request", { _request_id: id, _reason: reason });
+    setBusy(false);
+    if (error) return toast.error(error.message);
+    toast.success("Payment rejected");
+    loadAll();
+  };
+  const signedScreenshotUrl = async (path: string) => {
+    const { data } = await supabase.storage.from("uploads").createSignedUrl(path, 300);
+    if (data?.signedUrl) window.open(data.signedUrl, "_blank");
+  };
+
   const filteredUsers = users.filter((u) =>
     !filter || u.email?.toLowerCase().includes(filter.toLowerCase()) || u.display_name?.toLowerCase().includes(filter.toLowerCase())
   );
-
-  return (
+  const filteredPayments = payments.filter((p) => paymentFilter === "all" || p.status === paymentFilter);
+  const pendingCount = payments.filter((p) => p.status === "pending").length;
     <div className="max-w-7xl mx-auto space-y-6">
       <div className="flex items-center gap-3">
         <ShieldCheck className="h-7 w-7 text-primary" />
