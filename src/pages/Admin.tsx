@@ -210,6 +210,8 @@ export default function Admin() {
   );
   const filteredPayments = payments.filter((p) => paymentFilter === "all" || p.status === paymentFilter);
   const pendingCount = payments.filter((p) => p.status === "pending").length;
+
+  return (
     <div className="max-w-7xl mx-auto space-y-6">
       <div className="flex items-center gap-3">
         <ShieldCheck className="h-7 w-7 text-primary" />
