@@ -235,6 +235,42 @@ export type Database = {
         }
         Relationships: []
       }
+      cycle_logs: {
+        Row: {
+          created_at: string
+          date: string
+          flow_level: number | null
+          id: string
+          mood: string | null
+          notes: string | null
+          symptoms: string[] | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          date?: string
+          flow_level?: number | null
+          id?: string
+          mood?: string | null
+          notes?: string | null
+          symptoms?: string[] | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          flow_level?: number | null
+          id?: string
+          mood?: string | null
+          notes?: string | null
+          symptoms?: string[] | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       daily_plans: {
         Row: {
           created_at: string
@@ -298,6 +334,45 @@ export type Database = {
         }
         Relationships: []
       }
+      family_shares: {
+        Row: {
+          created_at: string
+          id: string
+          invitee_email: string
+          invitee_id: string | null
+          owner_id: string
+          share_cycle: boolean
+          share_journal: boolean
+          share_plan: boolean
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          invitee_email: string
+          invitee_id?: string | null
+          owner_id: string
+          share_cycle?: boolean
+          share_journal?: boolean
+          share_plan?: boolean
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          invitee_email?: string
+          invitee_id?: string | null
+          owner_id?: string
+          share_cycle?: boolean
+          share_journal?: boolean
+          share_plan?: boolean
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       faq_items: {
         Row: {
           answer: string
@@ -319,6 +394,42 @@ export type Database = {
           id?: string
           question?: string
           sort_order?: number
+        }
+        Relationships: []
+      }
+      journal_entries: {
+        Row: {
+          ai_mood: string | null
+          ai_summary: string | null
+          content: string
+          created_at: string
+          id: string
+          language: string
+          mood_score: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          ai_mood?: string | null
+          ai_summary?: string | null
+          content: string
+          created_at?: string
+          id?: string
+          language?: string
+          mood_score?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          ai_mood?: string | null
+          ai_summary?: string | null
+          content?: string
+          created_at?: string
+          id?: string
+          language?: string
+          mood_score?: number | null
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -378,6 +489,10 @@ export type Database = {
           display_name: string | null
           email: string | null
           id: string
+          locale: string
+          reminder_cycle: boolean
+          reminder_evening: boolean
+          reminder_morning: boolean
           updated_at: string
         }
         Insert: {
@@ -387,6 +502,10 @@ export type Database = {
           display_name?: string | null
           email?: string | null
           id: string
+          locale?: string
+          reminder_cycle?: boolean
+          reminder_evening?: boolean
+          reminder_morning?: boolean
           updated_at?: string
         }
         Update: {
@@ -396,6 +515,10 @@ export type Database = {
           display_name?: string | null
           email?: string | null
           id?: string
+          locale?: string
+          reminder_cycle?: boolean
+          reminder_evening?: boolean
+          reminder_morning?: boolean
           updated_at?: string
         }
         Relationships: []

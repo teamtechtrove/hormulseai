@@ -8,6 +8,7 @@ import {
 import { useAuth } from "@/context/AuthContext";
 import Seo from "@/components/Seo";
 import { PLANS, PLAN_ORDER, formatBDT } from "@/lib/plans";
+import FounderSection from "@/components/FounderSection";
 
 const PROVIDERS = ["Gemini 2.5", "Claude 3.5", "DeepSeek", "Groq", "GPT-5"];
 
@@ -229,6 +230,9 @@ export default function Index() {
           ))}
         </div>
       </section>
+
+      {/* ===== Founder ===== */}
+      <FounderSection />
 
       {/* ===== Final CTA ===== */}
       <section className="container mx-auto px-4 pb-24">

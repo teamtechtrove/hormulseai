@@ -4,9 +4,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Globe, Sparkles, ExternalLink, LogIn, LayoutDashboard } from "lucide-react";
+import { Sparkles, LogIn, LayoutDashboard } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import Seo from "@/components/Seo";
+import FounderSection from "@/components/FounderSection";
 
 export default function About() {
   const { user } = useAuth();
@@ -83,21 +84,8 @@ export default function About() {
         </CardContent>
       </Card>
 
-      <Card className="shadow-soft">
-        <CardHeader><CardTitle>The maker</CardTitle></CardHeader>
-        <CardContent className="space-y-4">
-          <p>
-            Built by <strong>Arman</strong>. See more of my work at:
-          </p>
-          <Button asChild className="bg-gradient-primary">
-            <a href={portfolio} target="_blank" rel="noreferrer">
-              <Globe className="h-4 w-4 mr-2" />
-              Visit portfolio
-              <ExternalLink className="h-3 w-3 ml-2 opacity-70" />
-            </a>
-          </Button>
-        </CardContent>
-      </Card>
+      <FounderSection />
+      <div className="hidden">{portfolio}</div>
 
       <Card className="shadow-soft">
         <CardHeader><CardTitle>FAQ</CardTitle></CardHeader>
