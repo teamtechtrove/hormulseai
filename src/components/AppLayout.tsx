@@ -2,7 +2,7 @@ import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import {
   LayoutDashboard, MessageSquare, Activity, CalendarCheck, BookOpen,
-  User, Shield, LogOut, Sparkles, Menu,
+  User, Shield, LogOut, Sparkles, Menu, Droplet, Notebook, Settings as SettingsIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
@@ -12,9 +12,12 @@ import { cn } from "@/lib/utils";
 const nav = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/chat", label: "AI Chat", icon: MessageSquare },
+  { to: "/journal", label: "Journal", icon: Notebook },
+  { to: "/cycle", label: "Cycle", icon: Droplet },
   { to: "/tracking", label: "Tracking", icon: Activity },
   { to: "/plan", label: "Daily Plan", icon: CalendarCheck },
   { to: "/education", label: "Education", icon: BookOpen },
+  { to: "/settings", label: "Settings", icon: SettingsIcon },
   { to: "/about", label: "About", icon: User },
 ];
 

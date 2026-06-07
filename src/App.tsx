@@ -17,6 +17,9 @@ import About from "./pages/About";
 import Admin from "./pages/Admin";
 import Pricing from "./pages/Pricing";
 import Checkout from "./pages/Checkout";
+import Cycle from "./pages/Cycle";
+import Journal from "./pages/Journal";
+import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -40,6 +43,9 @@ const App = () => (
               <Route path="/tracking" element={<Tracking />} />
               <Route path="/plan" element={<DailyPlan />} />
               <Route path="/education" element={<Education />} />
+              <Route path="/cycle" element={<Cycle />} />
+              <Route path="/journal" element={<Journal />} />
+              <Route path="/settings" element={<Settings />} />
               <Route path="/admin" element={<AdminRoute><Admin /></AdminRoute>} />
             </Route>
             <Route path="*" element={<NotFound />} />
